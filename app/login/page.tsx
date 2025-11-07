@@ -12,10 +12,9 @@ import {
     Alert,
     CircularProgress,
 } from "@mui/material";
-import { createBrowserClient } from "@/lib/supabase";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-    const supabase = useMemo(() => createBrowserClient(), []);
     const [email, setEmail] = useState("");
     const [pending, setPending] = useState(false);
     const [info, setInfo] = useState<string | null>(null);
@@ -24,22 +23,21 @@ export default function LoginPage() {
     const disabled = pending || !/^\S+@\S+\.\S+$/.test(email);
 
     const handleMagicLink = async () => {
-
         setError(null);
         setInfo(null);
         setPending(true);
 
         try {
-            const redirectTo = typeof window !== "undefined" ? window.location.origin : undefined;
-
+            const supabase = createBrowserSupabaseClient();
             const { error } = await supabase.auth.signInWithOtp({
                 email,
                 options: {
-                    emailRedirectTo: redirectTo,
-                },
+                emailRedirectTo: `${window.location.origin}/auth/callback`,
+            },
             });
 
             if (error) throw error;
+
             setInfo(
                 "A magic link has just been sent. Open your email and click the link to sign in."
             );
