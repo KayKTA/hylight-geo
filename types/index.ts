@@ -19,3 +19,8 @@ export type Photo = {
     lon: number;
     imageUrl: string;                  // signed URL
 };
+
+export type Gps = {
+    lat: number | "";
+    lon: number | ""
+};

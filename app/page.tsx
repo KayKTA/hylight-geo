@@ -1,10 +1,11 @@
+import AppBarNav from "@/components/AppBarNav";
 import Explorer from "@/components/Explorer";
-import { createServerClient } from "@/lib/supabase";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { Photo, PhotoRow } from "@/types";
 
 async function loadPhotos(): Promise<Photo[]> {
 
-    const admin = createServerClient();
+    const admin = createBrowserSupabaseClient();
 
     const { data: photos, error } = await admin
         .from("photos")
@@ -37,5 +38,10 @@ async function loadPhotos(): Promise<Photo[]> {
 
 export default async function HomePage() {
     const photos = await loadPhotos();
-    return <Explorer photos={photos} />;
+    return (
+        <>
+            {/* <AppBarNav /> */}
+            <Explorer photos={photos} />;
+        </>
+    );
 }
