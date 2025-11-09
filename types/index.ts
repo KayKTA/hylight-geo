@@ -1,28 +1,22 @@
-/** photos as stored in Postgres */
-export type PhotoRow = {
+export interface User {
     id: string;
-    user_id: string | null;
-    path: string;
-    lat: number;
-    lon: number;
-    exif: any | null;
-    title: string | null;
-    description: string | null;
-    created_at: string;               // timestamptz → string in JS client
-};
+    email: string;
+}
 
 export interface Photo {
     id: string;
-    title: string;
-    description?: string | null;
+    user_id: string;
+    path: string;
+    title: string | null;
+    description: string | null;
     lat: number;
     lon: number;
-    imageUrl: string;
-    userId?: string;
-    createdAt?: string;
-    comments?: Comment[];
+    exif: any | null;
+    created_at: string;
+    imageUrl?: string;
     commentCount?: number;
 }
+
 export interface Comment {
     id: string;
     photo_id: string;
@@ -31,7 +25,22 @@ export interface Comment {
     created_at: string;
 }
 
-export type Gps = {
+export interface Gps {
     lat: number | "";
-    lon: number | ""
-};
+    lon: number | "";
+}
+
+// API Response types
+export type ApiResponse<T> =
+    | { data: T; error: null }
+    | { data: null; error: string };
+
+// Hook return types
+export interface UseCommentsReturn {
+    comments: Comment[];
+    loading: boolean;
+    error: string | null;
+    addComment: (content: string) => Promise<void>;
+    deleteComment: (id: string) => Promise<void>;
+    refresh: () => Promise<void>;
+}

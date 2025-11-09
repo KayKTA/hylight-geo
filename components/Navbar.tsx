@@ -1,137 +1,131 @@
-"use client"
-import { useState, useEffect } from 'react'
-import { User } from '@supabase/supabase-js'
+"use client";
+
+import { useEffect, useState } from "react";
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  Box,
-  Avatar,
-  Menu,
-  MenuItem,
-  Chip
-} from '@mui/material'
-import { createBrowserSupabaseClient } from '@/lib/supabase/client'
-import { LogOut, MapPin } from 'lucide-react'
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    Box,
+    Avatar,
+    Menu,
+    MenuItem,
+    IconButton,
+} from "@mui/material";
+import { MapPin, LogOut } from "lucide-react";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
-    const [user, setUser] = useState<User | null>(null)
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-    const supabase = createBrowserSupabaseClient()
+    const supabase = createBrowserSupabaseClient();
+    const router = useRouter();
+
+    const [userEmail, setUserEmail] = useState<string | null>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     useEffect(() => {
-        supabase.auth.getUser().then(({ data: { user } }: any) => {
-            setUser(user)
-        })
+        // Get current user
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setUserEmail(user?.email || null);
+        });
 
-        // Écouter les changements
-        // const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
-        //   setUser(session?.user ?? null)
-        // })
+        // Listen to auth changes
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((event, session) => {
+            setUserEmail(session?.user?.email || null);
+        });
 
-        // return () => subscription.unsubscribe()
-    }, [])
-
-    const handleLogout = async () => {
-        await supabase.auth.signOut()
-        window.location.href = '/login'
-    }
+        return () => subscription.unsubscribe();
+    }, [supabase]);
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget)
-    }
+        setAnchorEl(event.currentTarget);
+    };
 
     const handleMenuClose = () => {
-        setAnchorEl(null)
-    }
+        setAnchorEl(null);
+    };
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        handleMenuClose();
+        router.push("/login");
+    };
 
     const getInitials = (email: string) => {
-        return email.charAt(0).toUpperCase()
-    }
+        return email.charAt(0).toUpperCase();
+    };
 
     return (
-        <AppBar position="sticky" elevation={1}>
-            <Toolbar sx={{ justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <AppBar position="static" elevation={1}>
+            <Toolbar>
+                {/* Logo / Title */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexGrow: 1 }}>
                     <MapPin size={24} />
                     <Typography variant="h6" fontWeight={700}>
                         GeoPhotos
                     </Typography>
                 </Box>
 
-                {user ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Chip
-                        label="Connected"
-                        color="success"
-                        size="small"
-                        sx={{ display: { xs: 'none', sm: 'flex' } }}
-                    />
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {/* <Typography
+                {/* User menu or login button */}
+                {userEmail ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Typography
                             variant="body2"
-                            sx={{ display: { xs: 'none', md: 'block' } }}
+                            sx={{ display: { xs: "none", sm: "block" } }}
                         >
-                            {user.email}
-                        </Typography> */}
-
-                        <Button
+                            {userEmail}
+                        </Typography>
+                        <IconButton
                             onClick={handleMenuOpen}
-                            sx={{
-                                minWidth: 'auto',
-                                p: 0.5,
-                                borderRadius: '50%'
-                            }}
+                            size="small"
+                            sx={{ ml: 1 }}
                         >
                             <Avatar
                                 sx={{
                                     width: 32,
                                     height: 32,
-                                    bgcolor: 'primary.dark',
-                                    fontSize: '0.875rem'
+                                    bgcolor: "primary.dark",
+                                    fontSize: "0.875rem",
                                 }}
                             >
-                                {user.email && getInitials(user.email)}
+                                {getInitials(userEmail)}
                             </Avatar>
-                        </Button>
-                    </Box>
+                        </IconButton>
 
-                    <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleMenuClose}
-                        anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'right',
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
-                        }}
-                    >
-                        <MenuItem disabled>
-                            <Typography variant="body2" color="text.secondary">
-                            {user.email}
-                            </Typography>
-                        </MenuItem>
-                        <MenuItem onClick={handleLogout} sx={{ gap: 1 }}>
-                            <LogOut size={16} />
-                            Logout
-                        </MenuItem>
-                    </Menu>
-                </Box>
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={Boolean(anchorEl)}
+                            onClose={handleMenuClose}
+                            anchorOrigin={{
+                                vertical: "bottom",
+                                horizontal: "right",
+                            }}
+                            transformOrigin={{
+                                vertical: "top",
+                                horizontal: "right",
+                            }}
+                        >
+                            <MenuItem disabled>
+                                <Typography variant="body2" color="text.secondary">
+                                    {userEmail}
+                                </Typography>
+                            </MenuItem>
+                            <MenuItem onClick={handleLogout}>
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                    <LogOut size={16} />
+                                    Logout
+                                </Box>
+                            </MenuItem>
+                        </Menu>
+                    </Box>
                 ) : (
-                <Button
-                    color="inherit"
-                    href="/login"
-                    variant="outlined"
-                >
-                    Login
-                </Button>
+                    <Button color="inherit" variant="outlined" href="/login">
+                        Login
+                    </Button>
                 )}
             </Toolbar>
         </AppBar>
-    )
+    );
 }

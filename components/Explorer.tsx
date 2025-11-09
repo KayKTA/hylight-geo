@@ -7,13 +7,12 @@ import MapClient from "./MapClient";
 import UploadModal from "./UploadModal";
 import { Photo } from "@/types";
 
-export default function Explorer({
-    photos,
-    userId
-}: {
+interface ExplorerProps {
     photos: Photo[];
     userId: string | null;
-}) {
+}
+
+export default function Explorer({ photos, userId }: ExplorerProps) {
     const [uploadOpen, setUploadOpen] = useState(false);
 
     return (
@@ -21,7 +20,8 @@ export default function Explorer({
             sx={{
                 display: "grid",
                 gridTemplateColumns: { xs: "1fr", md: "320px 1fr" },
-                height: "100dvh",
+                height: "100%", // Changed from 100dvh to 100%
+                overflow: "hidden",
             }}
         >
             {/* Sidebar */}
@@ -59,7 +59,7 @@ export default function Explorer({
                     <Divider />
 
                     <Typography color="text.secondary" variant="body2">
-                        {photos.length} geotagged photo{photos.length !== 1 && "s"}
+                        {photos.length} geotagged photo{photos.length !== 1 ? "s" : ""}
                     </Typography>
 
                     <Divider />
@@ -71,8 +71,8 @@ export default function Explorer({
             </Box>
 
             {/* Map */}
-            <Box sx={{ position: "relative" }}>
-                <MapClient photos={photos} userId={userId}/>
+            <Box sx={{ position: "relative", height: "100%" }}>
+                <MapClient photos={photos} userId={userId} />
             </Box>
 
             {/* Upload Modal */}

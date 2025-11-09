@@ -1,69 +1,72 @@
 import Explorer from "@/components/Explorer";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { Photo, PhotoRow } from "@/types";
-import { Alert, Container, Typography, Box } from "@mui/material";
+import { getUserPhotos } from "@/lib/api/photos";
+import { getCommentCount } from "@/lib/api/comments";
+import { Photo } from "@/types";
 
+/**
+ * Load all photos for the authenticated user with comment counts
+ */
 async function loadPhotos(): Promise<Photo[]> {
     try {
         const supabase = await createServerSupabaseClient();
-        const { data: { user } } = await supabase.auth.getUser();
 
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
-        const { data: photos, error } = await supabase
-            .from("photos")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(500);
+        // Fetch photos using API layer
+        const result = await getUserPhotos(supabase);
 
-        if (error || !photos || photos.length === 0) return [];
+        if (result.error || !result.data) {
+            console.error("Error loading photos:", result.error);
+            return [];
+        }
 
-        const photosWithUrls = await Promise.allSettled(
-            photos.map(async (photo: PhotoRow) => {
-                const { data: signed } = await supabase.storage
-                    .from("photos")
-                    .createSignedUrl(photo.path, 60 * 60 * 24);
-
-                if (!signed?.signedUrl) return null;
-
+        // Add comment counts to each photo
+        const photosWithCounts = await Promise.all(
+            result.data.map(async (photo) => {
+                const countResult = await getCommentCount(supabase, photo.id);
                 return {
-                    id: photo.id,
-                    title: photo.title || "Untitled",
-                    description: photo.description,
-                    lat: photo.lat,
-                    lon: photo.lon,
-                    imageUrl: signed.signedUrl,
-                    userId: photo.user_id,
-                    createdAt: photo.created_at,
-                } as Photo;
+                    ...photo,
+                    commentCount: countResult.data || 0,
+                };
             })
         );
 
-        return photosWithUrls
-            .filter((result): result is PromiseFulfilledResult<NonNullable<Photo>> =>
-                result.status === "fulfilled" && result.value !== null
-            )
-            .map(result => result.value);
+        return photosWithCounts;
     } catch (error) {
         console.error("Unexpected error loading photos:", error);
         return [];
     }
 }
 
+/**
+ * Get current user ID
+ */
 async function getUserId(): Promise<string | null> {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    return user?.id ?? null;
+    try {
+        const supabase = await createServerSupabaseClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        return user?.id ?? null;
+    } catch (error) {
+        console.error("Error getting user:", error);
+        return null;
+    }
 }
 
+/**
+ * Home page - displays map with user's photos
+ */
 export default async function HomePage() {
     const [photos, userId] = await Promise.all([
         loadPhotos(),
-        getUserId()
+        getUserId(),
     ]);
 
     return <Explorer photos={photos} userId={userId} />;
 }
 
-export const dynamic = 'force-dynamic';
+// Force dynamic rendering and disable caching
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
