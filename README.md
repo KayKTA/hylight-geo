@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GeoPhotos - Geotagged Photo Mapping Application
 
-## Getting Started
+A modern web application that allows users to upload geotagged photos and display them on an interactive map. Users can add personal notes to their photos for future reference.
 
-First, run the development server:
+## 🎯 Features
+
+- 🔐 **Authentication**: Secure magic link authentication via Supabase
+- 📸 **Photo Upload**: Upload geotagged images with automatic EXIF GPS extraction
+- 🗺️ **Interactive Map**: View all your photos on a beautiful Leaflet map
+- 💬 **Personal Notes**: Add, edit, and delete notes on your photos
+- 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
+- ⚡ **Real-time Updates**: Instant UI updates after photo uploads and comments
+
+## 🏗️ Architecture & Technology Stack
+
+### **Frontend**
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **UI Library**: Material-UI (MUI) v5
+- **Map**: Leaflet + React-Leaflet
+- **Icons**: Lucide React
+- **Styling**: Emotion (CSS-in-JS)
+
+### **Backend & Database**
+- **BaaS**: Supabase
+- **Database**: PostgreSQL (via Supabase)
+- **Storage**: Supabase Storage (private bucket)
+- **Authentication**: Supabase Auth (Magic Link)
+
+### **Additional Tools**
+- **EXIF Extraction**: exifr
+- **State Management**: React Context API
+- **HTTP Client**: Supabase Client
+
+## 🚀 Deployment
+
+### **Local Development**
+
+The application can be run locally using:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Access at `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### **Production Deployment (Recommended: Vercel)**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### Prerequisites:
+- Vercel account
+- Supabase project (already configured)
 
-## Learn More
+#### Steps:
 
-To learn more about Next.js, take a look at the following resources:
+1. **Push to GitHub**
+```bash
+git push origin main
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Deploy to Vercel**
+- Connect GitHub repository to Vercel
+- Import project
+- Add environment variables:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Configure Supabase**
+- Add production URL to Supabase Auth redirect URLs
+- Update CORS settings if needed
 
-## Deploy on Vercel
+4. **Deploy**
+```bash
+vercel --prod
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📦 Installation & Setup
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### **Prerequisites**
+- Node.js 18+ and npm
+- Supabase account
+- Git
+
+### **Steps**
+
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd hylight-geo
+```
+
+2. **Install dependencies**
+```bash
+npm install
+```
+
+3. **Configure environment variables**
+
+Create `.env.local`:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+4. **Set up Supabase**
+
+Run the SQL migrations (see Database Schema section above)
+
+5. **Configure Authentication**
+
+In Supabase Dashboard → Authentication → URL Configuration:
+- Add `http://localhost:3000/auth/callback` to Redirect URLs
+
+6. **Run development server**
+```bash
+npm run dev
+```
+
+7. **Access the application**
+Open `http://localhost:3000`
+
+## 🔮 Future Enhancements
+
+- **AI Descriptions**: Automatic photo descriptions using Claude API
+- **Advanced Filters**: Search by date, location, tags
+- **Teams**: Create teams to share photos with colleagues
+- **Bulk Upload**: Upload multiple photos at once
+- **Mobile App**: Native iOS/Android apps

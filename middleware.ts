@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
       cookies: {
         getAll() {
           const cookies = request.cookies.getAll()
-          console.log('🍪 Cookies in middleware:', cookies)
+        //   console.log('🍪 Cookies in middleware:', cookies)
           return cookies
         },
         setAll(cookiesToSet) {
@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user }, error } = await supabase.auth.getUser()
-  console.log('👤 User in middleware:', user?.email, 'Error:', error)
+//   console.log('👤 User in middleware:', user?.email, 'Error:', error)
 
   return response
 }
