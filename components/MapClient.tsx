@@ -9,6 +9,7 @@ import { Box, Typography, Chip, Stack, Button } from "@mui/material";
 import { MessageSquare } from "lucide-react";
 import PhotoDetailModal from "./PhotoDetailModal";
 import { MAP_CONFIG } from "@/lib/constants";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 // Custom marker icon
 const createCustomIcon = (color: string = "#3b82f6") =>
@@ -44,10 +45,10 @@ function FitBounds({ photos }: { photos: Photo[] }) {
 
 interface MapClientProps {
     photos: Photo[];
-    userId: string | null;
 }
 
-export default function MapClient({ photos, userId }: MapClientProps) {
+export default function MapClient({ photos }: MapClientProps) {
+    const { userId } = useAuth();
     const icon = useMemo(() => createCustomIcon(), []);
     const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
@@ -118,23 +119,27 @@ export default function MapClient({ photos, userId }: MapClientProps) {
                 ))}
             </MapContainer>
 
-            {/* Legend */}
-            {photos.length > 0 && (
+            {/* No photos message */}
+            {photos.length === 0 && (
                 <Box
                     sx={{
                         position: "absolute",
-                        bottom: 16,
-                        right: 16,
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        textAlign: "center",
                         bgcolor: "background.paper",
-                        px: 2,
-                        py: 1,
-                        borderRadius: 1,
-                        boxShadow: 2,
+                        p: 3,
+                        borderRadius: 2,
+                        boxShadow: 3,
                         zIndex: 1000,
                     }}
                 >
-                    <Typography variant="caption" fontWeight={600}>
-                        {photos.length} photo{photos.length > 1 ? "s" : ""}
+                    <Typography variant="h6" gutterBottom>
+                        No photos yet
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Upload your first geotagged photo to see it on the map
                     </Typography>
                 </Box>
             )}
@@ -145,7 +150,6 @@ export default function MapClient({ photos, userId }: MapClientProps) {
                     open={!!selectedPhoto}
                     onClose={() => setSelectedPhoto(null)}
                     photo={selectedPhoto}
-                    userId={userId}
                 />
             )}
         </Box>

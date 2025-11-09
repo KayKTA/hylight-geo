@@ -15,6 +15,7 @@ import { X, MapPin, Calendar, MessageSquare } from "lucide-react";
 import { Photo } from "@/types";
 import { useComments } from "@/lib/hooks/useComments";
 import { formatRelativeTime, formatCoordinates } from "@/lib/utils/format";
+import { useAuth } from "@/lib/contexts/AuthContext";
 import CommentForm from "./CommentForm";
 import CommentList from "./CommentList";
 
@@ -22,19 +23,19 @@ interface PhotoDetailModalProps {
     open: boolean;
     onClose: () => void;
     photo: Photo | null;
-    userId: string;
 }
 
 export default function PhotoDetailModal({
     open,
     onClose,
     photo,
-    userId,
 }: PhotoDetailModalProps) {
+    const { userId } = useAuth();
+
     // Use custom hook for all comment logic
     const { comments, loading, error, addComment, deleteComment } = useComments(
         photo?.id || null,
-        userId
+        userId || ""
     );
 
     if (!photo) return null;

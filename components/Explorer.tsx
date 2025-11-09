@@ -6,13 +6,14 @@ import { Plus } from "lucide-react";
 import MapClient from "./MapClient";
 import UploadModal from "./UploadModal";
 import { Photo } from "@/types";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 interface ExplorerProps {
     photos: Photo[];
-    userId: string | null;
 }
 
-export default function Explorer({ photos, userId }: ExplorerProps) {
+export default function Explorer({ photos }: ExplorerProps) {
+    const { userId } = useAuth();
     const [uploadOpen, setUploadOpen] = useState(false);
 
     return (
@@ -20,7 +21,7 @@ export default function Explorer({ photos, userId }: ExplorerProps) {
             sx={{
                 display: "grid",
                 gridTemplateColumns: { xs: "1fr", md: "320px 1fr" },
-                height: "100%", // Changed from 100dvh to 100%
+                height: "100%",
                 overflow: "hidden",
             }}
         >
@@ -72,7 +73,7 @@ export default function Explorer({ photos, userId }: ExplorerProps) {
 
             {/* Map */}
             <Box sx={{ position: "relative", height: "100%" }}>
-                <MapClient photos={photos} userId={userId} />
+                <MapClient photos={photos} />
             </Box>
 
             {/* Upload Modal */}

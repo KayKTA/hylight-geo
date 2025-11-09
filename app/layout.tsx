@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Box } from "@mui/material";
 import Providers from "./providers";
+import { AuthProvider } from "@/lib/contexts/AuthContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,29 +22,31 @@ export default function RootLayout({
         <html lang="en">
             <body className={inter.className}>
                 <Providers>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            height: "100vh",
-                            overflow: "hidden",
-                        }}
-                    >
-                        {/* Navbar - fixed height */}
-                        <Navbar />
-
-                        {/* Main content - takes remaining height */}
+                    <AuthProvider>
                         <Box
-                            component="main"
                             sx={{
-                                flex: 1,
+                                display: "flex",
+                                flexDirection: "column",
+                                height: "100vh",
                                 overflow: "hidden",
-                                position: "relative",
                             }}
                         >
-                            {children}
+                            {/* Navbar - fixed height */}
+                            <Navbar />
+
+                            {/* Main content - takes remaining height */}
+                            <Box
+                                component="main"
+                                sx={{
+                                    flex: 1,
+                                    overflow: "hidden",
+                                    position: "relative",
+                                }}
+                            >
+                                {children}
+                            </Box>
                         </Box>
-                    </Box>
+                    </AuthProvider>
                 </Providers>
             </body>
         </html>

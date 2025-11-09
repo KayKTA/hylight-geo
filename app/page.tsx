@@ -42,29 +42,12 @@ async function loadPhotos(): Promise<Photo[]> {
 }
 
 /**
- * Get current user ID
- */
-async function getUserId(): Promise<string | null> {
-    try {
-        const supabase = await createServerSupabaseClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        return user?.id ?? null;
-    } catch (error) {
-        console.error("Error getting user:", error);
-        return null;
-    }
-}
-
-/**
  * Home page - displays map with user's photos
  */
 export default async function HomePage() {
-    const [photos, userId] = await Promise.all([
-        loadPhotos(),
-        getUserId(),
-    ]);
+    const photos = await loadPhotos();
 
-    return <Explorer photos={photos} userId={userId} />;
+    return <Explorer photos={photos} />;
 }
 
 // Force dynamic rendering and disable caching
