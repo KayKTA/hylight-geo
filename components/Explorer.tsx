@@ -1,10 +1,21 @@
 "use client";
 
-import { Box, Divider, Stack, Typography } from "@mui/material";
+import { useState } from "react";
+import { Box, Divider, Stack, Typography, Button, Alert } from "@mui/material";
+import { Plus } from "lucide-react";
 import MapClient from "./MapClient";
+import UploadModal from "./UploadModal";
 import { Photo } from "@/types";
 
-export default function Explorer({ photos }: { photos: Photo[] }) {
+export default function Explorer({
+    photos,
+    userId
+}: {
+    photos: Photo[];
+    userId: string | null;
+}) {
+    const [uploadOpen, setUploadOpen] = useState(false);
+
     return (
         <Box
             sx={{
@@ -23,12 +34,31 @@ export default function Explorer({ photos }: { photos: Photo[] }) {
                     overflowY: "auto",
                 }}
             >
-                <Stack spacing={1.5}>
+                <Stack spacing={2}>
                     <Typography variant="h6" fontWeight={800}>
                         Explorer
                     </Typography>
 
-                    <Typography color="text.secondary">
+                    {/* Upload Button */}
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        startIcon={<Plus size={18} />}
+                        onClick={() => setUploadOpen(true)}
+                        disabled={!userId}
+                    >
+                        Upload Photo
+                    </Button>
+
+                    {!userId && (
+                        <Alert severity="warning" sx={{ fontSize: "0.875rem" }}>
+                            Please login to upload photos
+                        </Alert>
+                    )}
+
+                    <Divider />
+
+                    <Typography color="text.secondary" variant="body2">
                         {photos.length} geotagged photo{photos.length !== 1 && "s"}
                     </Typography>
 
@@ -40,9 +70,19 @@ export default function Explorer({ photos }: { photos: Photo[] }) {
                 </Stack>
             </Box>
 
+            {/* Map */}
             <Box sx={{ position: "relative" }}>
                 <MapClient photos={photos} />
             </Box>
+
+            {/* Upload Modal */}
+            {userId && (
+                <UploadModal
+                    open={uploadOpen}
+                    onClose={() => setUploadOpen(false)}
+                    userId={userId}
+                />
+            )}
         </Box>
     );
 }
