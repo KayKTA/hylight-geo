@@ -3,16 +3,23 @@
 import { useState } from "react";
 import { Box, Divider, Stack, Typography, Button, Alert } from "@mui/material";
 import { Plus } from "lucide-react";
-import MapClient from "./MapClient";
-import UploadModal from "./UploadModal";
 import { Photo } from "@/types";
 import { useAuth } from "@/lib/contexts/AuthContext";
+import UploadModal from "./UploadModal";
+import dynamic from "next/dynamic";
+import { useRequireAuth } from "@/lib/hooks/useRequireAuth";
+
+// Lazy import MapClient (no SSR)
+const MapClient = dynamic(() => import("./MapClient"), {
+  ssr: false,
+});
 
 interface ExplorerProps {
     photos: Photo[];
 }
 
 export default function Explorer({ photos }: ExplorerProps) {
+    useRequireAuth();
     const { userId } = useAuth();
     const [uploadOpen, setUploadOpen] = useState(false);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Box,
     Container,
@@ -13,14 +13,26 @@ import {
     CircularProgress,
 } from "@mui/material";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
     const [email, setEmail] = useState("");
     const [pending, setPending] = useState(false);
     const [info, setInfo] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const disabled = pending || !/^\S+@\S+\.\S+$/.test(email);
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (!loading && user) {
+            router.replace("/"); // prevent going back to login page
+        }
+    }, [user, loading, router]);
 
     const handleMagicLink = async () => {
         setError(null);
@@ -32,8 +44,8 @@ export default function LoginPage() {
             const { error } = await supabase.auth.signInWithOtp({
                 email,
                 options: {
-                emailRedirectTo: `${window.location.origin}/auth/callback`,
-            },
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
+                },
             });
 
             if (error) throw error;
