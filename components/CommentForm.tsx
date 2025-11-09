@@ -18,7 +18,7 @@ export default function CommentForm({ onSubmit, disabled = false }: CommentFormP
 
         setSubmitting(true);
         try {
-            await onSubmit(content);
+            await onSubmit(content.trim());
             setContent(""); // Clear input on success
         } catch (error) {
             // Error is handled by parent
@@ -42,13 +42,14 @@ export default function CommentForm({ onSubmit, disabled = false }: CommentFormP
                 placeholder="Add a note..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 multiline
                 maxRows={3}
                 disabled={disabled || submitting}
             />
             <Button
                 variant="contained"
+                aria-label="Post"
                 onClick={handleSubmit}
                 disabled={!content.trim() || disabled || submitting}
                 sx={{ minWidth: "auto", px: 2 }}
