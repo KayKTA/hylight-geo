@@ -5,13 +5,12 @@ export type PhotoRow = {
     path: string;
     lat: number;
     lon: number;
-    exif: any | null;                 // can refine later
+    exif: any | null;
     title: string | null;
     description: string | null;
     created_at: string;               // timestamptz → string in JS client
 };
 
-/** Mapped shape used by the UI (after we resolve the file URL) */
 export interface Photo {
     id: string;
     title: string;
@@ -21,6 +20,15 @@ export interface Photo {
     imageUrl: string;
     userId?: string;
     createdAt?: string;
+    comments?: Comment[];
+    commentCount?: number;
+}
+export interface Comment {
+    id: string;
+    photo_id: string;
+    user_id: string;
+    content: string;
+    created_at: string;
 }
 
 export type Gps = {

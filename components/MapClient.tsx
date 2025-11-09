@@ -1,14 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { Photo } from "@/types";
-import { Box, Typography, Chip, Stack } from "@mui/material";
+import { Box, Typography, Chip, Stack, Button } from "@mui/material";
 import { Calendar, MapPin } from "lucide-react";
+import PhotoDetailModal from "./PhotoDetailModal";
 
-// Icône personnalisée pour les markers
+
+// Personalised icon for markers
 const createCustomIcon = (color: string = "#3b82f6") => new L.Icon({
     iconUrl: `data:image/svg+xml;base64,${btoa(`
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="2">
@@ -21,7 +23,7 @@ const createCustomIcon = (color: string = "#3b82f6") => new L.Icon({
     popupAnchor: [0, -32],
 });
 
-// Composant pour ajuster automatiquement la vue de la carte
+// Adjust map view to fit all markers
 function FitBounds({ photos }: { photos: Photo[] }) {
     const map = useMap();
 
@@ -29,10 +31,10 @@ function FitBounds({ photos }: { photos: Photo[] }) {
         if (photos.length === 0) return;
 
         if (photos.length === 1) {
-            // Une seule photo : centrer dessus
+            // center on single photo
             map.setView([photos[0].lat, photos[0].lon], 13);
         } else {
-            // Plusieurs photos : ajuster pour tout voir
+            // adjust bounds to fit all photos
             const bounds = L.latLngBounds(photos.map(p => [p.lat, p.lon]));
             map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
         }
@@ -41,22 +43,17 @@ function FitBounds({ photos }: { photos: Photo[] }) {
     return null;
 }
 
-// Formater la date
-function formatDate(dateString?: string) {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-}
-
-export default function MapClient({ photos }: { photos: Photo[] }) {
+export default function MapClient({
+    photos,
+    userId
+}: {
+    photos: Photo[];
+    userId: string | null;
+}) {
     const icon = useMemo(() => createCustomIcon(), []);
+    const defaultCenter: [number, number] = [46.603354, 1.888334];
 
-    // Centre par défaut si pas de photos
-    const defaultCenter: [number, number] = [46.603354, 1.888334]; // Centre de la France
+    const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
     return (
         <Box sx={{ height: "100%", width: "100%", position: "relative" }}>
@@ -69,133 +66,71 @@ export default function MapClient({ photos }: { photos: Photo[] }) {
                 worldCopyJump
                 scrollWheelZoom
             >
-                {/* Tile Layer - Style CartoDB Voyager (plus moderne) */}
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                    // url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 />
 
-                {/* Ajuster automatiquement la vue */}
                 <FitBounds photos={photos} />
 
-                {/* Markers */}
                 {photos.map((photo) => (
                     <Marker
                         key={photo.id}
                         position={[photo.lat, photo.lon]}
                         icon={icon}
                     >
-                        <Popup maxWidth={300} minWidth={250}>
+                        <Popup maxWidth={250} minWidth={200}>
                             <Stack spacing={1.5}>
-                                {/* Image */}
+                                {/* Image preview */}
                                 <Box
                                     component="img"
                                     src={photo.imageUrl}
                                     alt={photo.title || "Photo"}
                                     sx={{
                                         width: "100%",
-                                        height: 180,
+                                        height: 120,
                                         objectFit: "cover",
                                         borderRadius: 1,
-                                        cursor: "pointer",
-                                        transition: "opacity 0.2s",
-                                        "&:hover": {
-                                            opacity: 0.9,
-                                        },
                                     }}
-                                    onClick={() => window.open(photo.imageUrl, "_blank")}
                                 />
 
-                                {/* Titre */}
-                                <Typography variant="subtitle1" fontWeight={700}>
+                                {/* Title */}
+                                <Typography variant="subtitle2" fontWeight={700}>
                                     {photo.title || "Untitled"}
                                 </Typography>
 
-                                {/* Description */}
-                                {photo.description && (
-                                    <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                        sx={{
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            display: "-webkit-box",
-                                            WebkitLineClamp: 3,
-                                            WebkitBoxOrient: "vertical",
-                                        }}
-                                    >
-                                        {photo.description}
-                                    </Typography>
+                                {/* Comment count */}
+                                {photo.commentCount !== undefined && photo.commentCount > 0 && (
+                                    <Chip
+                                        label={`${photo.commentCount} note${photo.commentCount > 1 ? 's' : ''}`}
+                                        size="small"
+                                        color="primary"
+                                    />
                                 )}
 
-                                {/* Métadonnées */}
-                                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                                    <Chip
-                                        icon={<MapPin size={14} />}
-                                        label={`${photo.lat.toFixed(4)}, ${photo.lon.toFixed(4)}`}
-                                        size="small"
-                                        variant="outlined"
-                                    />
-                                    {photo.createdAt && (
-                                        <Chip
-                                            icon={<Calendar size={14} />}
-                                            label={formatDate(photo.createdAt)}
-                                            size="small"
-                                            variant="outlined"
-                                        />
-                                    )}
-                                </Stack>
+                                {/* View details button */}
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    fullWidth
+                                    onClick={() => setSelectedPhoto(photo)}
+                                >
+                                    View Details
+                                </Button>
                             </Stack>
                         </Popup>
                     </Marker>
                 ))}
             </MapContainer>
 
-            {/* Légende avec nombre de photos */}
-            {photos.length > 0 && (
-                <Box
-                    sx={{
-                        position: "absolute",
-                        bottom: 16,
-                        right: 16,
-                        bgcolor: "background.paper",
-                        px: 2,
-                        py: 1,
-                        borderRadius: 1,
-                        boxShadow: 2,
-                        zIndex: 1000,
-                    }}
-                >
-                    <Typography variant="caption" fontWeight={600}>
-                        {photos.length} photo{photos.length > 1 ? "s" : ""}
-                    </Typography>
-                </Box>
-            )}
-
-            {/* Message si aucune photo */}
-            {photos.length === 0 && (
-                <Box
-                    sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        textAlign: "center",
-                        bgcolor: "background.paper",
-                        p: 3,
-                        borderRadius: 2,
-                        boxShadow: 3,
-                        zIndex: 1000,
-                    }}
-                >
-                    <Typography variant="h6" gutterBottom>
-                        No photos yet
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        Upload your first geotagged photo to see it on the map
-                    </Typography>
-                </Box>
+            {/* Photo Detail Modal */}
+            {userId && (
+                <PhotoDetailModal
+                    open={!!selectedPhoto}
+                    onClose={() => setSelectedPhoto(null)}
+                    photo={selectedPhoto}
+                    userId={userId}
+                />
             )}
         </Box>
     );

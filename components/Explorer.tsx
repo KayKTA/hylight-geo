@@ -72,7 +72,7 @@ export default function Explorer({
 
             {/* Map */}
             <Box sx={{ position: "relative" }}>
-                <MapClient photos={photos} />
+                <MapClient photos={photos} userId={userId}/>
             </Box>
 
             {/* Upload Modal */}
