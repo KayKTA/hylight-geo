@@ -118,6 +118,20 @@ npm run dev
 7. **Access the application**
 Open `http://localhost:3000`
 
+## 🧪 Testing
+
+### Running Tests
+```bash
+# Run all tests
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+```
+
 ## 🔮 Future Enhancements
 
 - **AI Descriptions**: Automatic photo descriptions using Claude API
