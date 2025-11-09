@@ -12,13 +12,16 @@ export type PhotoRow = {
 };
 
 /** Mapped shape used by the UI (after we resolve the file URL) */
-export type Photo = {
+export interface Photo {
     id: string;
-    title: string | null;
+    title: string;
+    description?: string | null;
     lat: number;
     lon: number;
-    imageUrl: string;                  // signed URL
-};
+    imageUrl: string;
+    userId?: string;
+    createdAt?: string;
+}
 
 export type Gps = {
     lat: number | "";
